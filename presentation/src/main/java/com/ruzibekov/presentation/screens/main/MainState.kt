@@ -17,10 +17,10 @@ sealed interface MainState {
     data class Error(val message: String) : MainState
 }
 
-sealed interface MainScreenAction {
-    data object OnBackClick : MainScreenAction
-    data object OnPlayClick : MainScreenAction
-    data object OnNextStep : MainScreenAction
-    data object OnPreviousStep : MainScreenAction
-    data class OnSeekAudio(val position: Float) : MainScreenAction
+sealed interface MainAction {
+    data object OnBackClick : MainAction
+    data object OnPlayClick : MainAction
+    data object OnNextStep : MainAction
+    data object OnPreviousStep : MainAction
+    data class OnSeekAudio(val position: Float) : MainAction
 }

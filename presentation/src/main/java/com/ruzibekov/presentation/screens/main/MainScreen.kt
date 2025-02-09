@@ -1,6 +1,7 @@
 package com.ruzibekov.presentation.screens.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,7 +42,7 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
                 title = { Text("Tour") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        viewModel.onEvent(MainScreenAction.OnBackClick)
+                        viewModel.sendAction(MainAction.OnBackClick)
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
@@ -49,41 +50,43 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
             )
         }
     ) { paddingValues ->
-        when (state) {
-            MainState.Loading -> LoadingScreen()
-            is MainState.Error -> ErrorScreen((state as MainState.Error).message)
-            is MainState.Success -> {
-                val content = state as MainState.Success
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    // Step indicator
-                    Text(
-                        text = "STEP ${content.currentStep.id}/${content.totalSteps}",
-                        modifier = Modifier.padding(16.dp)
-                    )
-
-                    // Image
-                    AsyncImage(
-                        model = content.currentStep.imageUrl,
-                        contentDescription = content.currentStep.title,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-
-                    // Audio controls
-                    AudioControls(
-                        isPlaying = content.isPlaying,
-                        progress = content.audioProgress,
-                        onPlayClick = { viewModel.onEvent(MainScreenAction.OnPlayClick) },
-                        onSeek = { viewModel.onEvent(MainScreenAction.OnSeekAudio(it)) }
-                    )
-                }
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (state) {
+                MainState.Loading -> LoadingScreen()
+                is MainState.Error -> ErrorScreen((state as MainState.Error).message)
+                is MainState.Success -> Content(state, viewModel::sendAction)
             }
         }
+    }
+}
+
+@Composable
+fun Content(state: MainState, sendAction: (MainAction) -> Unit) {
+    val content = state as MainState.Success
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        Text(
+            text = "STEP ${content.currentStep}/${content.totalSteps}",
+            modifier = Modifier.padding(16.dp)
+        )
+
+        // Image
+        AsyncImage(
+            model = content.currentStep.images,
+            contentDescription = content.currentStep.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        )
+
+        // Audio controls
+        AudioControls(
+            isPlaying = content.isPlaying,
+            progress = content.audioProgress,
+            onPlayClick = { sendAction(MainAction.OnPlayClick) },
+            onSeek = { sendAction(MainAction.OnSeekAudio(it)) }
+        )
     }
 }
 
