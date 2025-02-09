@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +77,6 @@ fun MainAudioController(
                     isPlaying,
                     modifier,
                     onSliderValueChange,
-                    onHideClick
                 )
             else
                 MainAudioContent2()
@@ -89,75 +91,87 @@ fun MainAudioContent1(
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
     onSliderValueChange: (Float) -> Unit,
-    onHideClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
             .systemBarsPadding()
             .fillMaxSize()
-            .padding(16.dp)
     ) {
 
-        Slider(
-            value = currentPosition,
-            onValueChange = onSliderValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-            )
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+        Card(
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            Text(
-                text = formatTime(currentPosition),
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                text = duration,
-                style = MaterialTheme.typography.headlineMedium
-            )
-        }
+            Column(modifier = Modifier.padding(all = 16.dp)) {
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Rewind 10 seconds"
+                Text(
+                    text = "Dobro pojalovat v zimniy dvorets",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 28.sp
                 )
-            }
 
-            IconButton(
-                onClick = { },
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape
+                Slider(
+                    value = currentPosition,
+                    onValueChange = onSliderValueChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
-            ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Default.Delete else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "Pause" else "Play",
-                    tint = MaterialTheme.colorScheme.onPrimary
                 )
-            }
 
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.Done,
-                    contentDescription = "Forward 10 seconds"
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = formatTime(currentPosition),
+                    )
+                    Text(
+                        text = duration,
+                    )
+                }
+
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Rewind 10 seconds"
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Default.Delete else Icons.Default.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                    IconButton(onClick = { }) {
+                        Icon(
+                            imageVector = Icons.Default.Done,
+                            contentDescription = "Forward 10 seconds"
+                        )
+                    }
+                }
             }
         }
 
@@ -200,7 +214,7 @@ private fun TopBar(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(R.string.audio_tour),
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 color = WeGoTripColors.Gray,
                 lineHeight = 12.sp,
                 textAlign = TextAlign.Center
@@ -208,7 +222,7 @@ private fun TopBar(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Medium
             )
         }
 

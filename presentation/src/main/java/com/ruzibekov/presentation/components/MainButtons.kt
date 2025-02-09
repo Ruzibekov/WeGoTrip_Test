@@ -39,7 +39,7 @@ fun OptionsButton(onClick: () -> Unit) {
         elevation = CardDefaults.elevatedCardElevation(5.dp)
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_options),
+            painter = painterResource(R.drawable.ic_option_horizontal),
             contentDescription = "close icon",
             modifier = Modifier.padding(8.dp).size(24.dp),
             tint = WeGoTripColors.Primary
