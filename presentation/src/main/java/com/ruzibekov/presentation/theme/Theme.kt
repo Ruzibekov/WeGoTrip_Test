@@ -1,4 +1,4 @@
-package com.ruzibekov.wegotrip_test.ui.theme
+package com.ruzibekov.presentation.theme
 
 import android.app.Activity
 import android.os.Build
