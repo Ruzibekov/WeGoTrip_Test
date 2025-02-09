@@ -1,70 +1,127 @@
 package com.ruzibekov.presentation.screens.main
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.ruzibekov.presentation.components.ErrorScreen
+import com.ruzibekov.presentation.components.LoadingScreen
 import com.ruzibekov.presentation.theme.WeGoTrip_TestTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        TopAppBar(
-//            title = {
-//                Text("ШАГ ${state.currentStep}/${state.totalSteps}")
-//            },
-//            navigationIcon = {
-//                IconButton(onClick = { /* навигация назад */ }) {
-//                    Icon(Icons.Default.Close, contentDescription = "Закрыть")
-//                }
-//            },
-//            actions = {
-//                IconButton(onClick = { /* меню */ }) {
-//                    Icon(Icons.Default.MoreVert, contentDescription = "Меню")
-//                }
-//            }
-//        )
-//
-//        if (state.isLoading) {
-//            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-//        }
-//
-//        Text(
-//            text = state.title,
-//            style = MaterialTheme.typography.h4,
-//            modifier = Modifier.padding(vertical = 16.dp)
-//        )
-//
-//        Text(
-//            text = state.description,
-//            style = MaterialTheme.typography.bodyMedium
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(vertical = 16.dp),
-//            horizontalArrangement = Arrangement.Center
-//        ) {
-//            repeat(state.totalSteps) { step ->
-//                Box(
-//                    modifier = Modifier
-//                        .size(8.dp)
-//                        .padding(horizontal = 4.dp)
-//                        .background(
-//                            if (step == state.currentStep - 1)
-//                                MaterialTheme.colorScheme.primary
-//                            else
-//                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-//                            CircleShape
-//                        )
-//                )
-//            }
-//        }
-//    }
+
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Tour") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        viewModel.onEvent(MainScreenAction.OnBackClick)
+                    }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        when (state) {
+            MainState.Loading -> LoadingScreen()
+            is MainState.Error -> ErrorScreen((state as MainState.Error).message)
+            is MainState.Success -> {
+                val content = state as MainState.Success
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    // Step indicator
+                    Text(
+                        text = "STEP ${content.currentStep.id}/${content.totalSteps}",
+                        modifier = Modifier.padding(16.dp)
+                    )
+
+                    // Image
+                    AsyncImage(
+                        model = content.currentStep.imageUrl,
+                        contentDescription = content.currentStep.title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+
+                    // Audio controls
+                    AudioControls(
+                        isPlaying = content.isPlaying,
+                        progress = content.audioProgress,
+                        onPlayClick = { viewModel.onEvent(MainScreenAction.OnPlayClick) },
+                        onSeek = { viewModel.onEvent(MainScreenAction.OnSeekAudio(it)) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AudioControls(
+    isPlaying: Boolean,
+    progress: Float,
+    onPlayClick: () -> Unit,
+    onSeek: (Float) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPlayClick) {
+            Icon(
+                if (isPlaying) Icons.Default.PlayArrow else Icons.Default.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play"
+            )
+        }
+
+        Slider(
+            value = progress,
+            onValueChange = onSeek,
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(text = formatTime(progress))
+    }
+}
+
+private fun formatTime(seconds: Float): String {
+    val minutes = (seconds / 60).toInt()
+    val remainingSeconds = (seconds % 60).toInt()
+    return "%d:%02d".format(minutes, remainingSeconds)
 }
 
 @Preview
