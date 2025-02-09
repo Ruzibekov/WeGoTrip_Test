@@ -1,13 +1,12 @@
 package com.ruzibekov.presentation.screens.main
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ruzibekov.presentation.theme.WeGoTrip_TestTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
 //    Column(
 //        modifier = Modifier
 //            .fillMaxSize()
