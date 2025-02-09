@@ -1,136 +1,135 @@
 package com.ruzibekov.presentation.screens.main
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import com.ruzibekov.domain.mock.MockData
+import com.ruzibekov.presentation.components.CloseButton
 import com.ruzibekov.presentation.components.ErrorScreen
 import com.ruzibekov.presentation.components.LoadingScreen
+import com.ruzibekov.presentation.components.MainAudioController
+import com.ruzibekov.presentation.components.MiniAudioController
+import com.ruzibekov.presentation.components.OptionsButton
+import com.ruzibekov.presentation.components.ProgressBar
 import com.ruzibekov.presentation.theme.WeGoTrip_TestTheme
+import kotlinx.coroutines.launch
+
+@Composable
+fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (state) {
+            MainState.Loading -> LoadingScreen()
+            is MainState.Error -> ErrorScreen((state as MainState.Error).message)
+            is MainState.Success -> MainContent(state, viewModel::sendAction)
+        }
+    }
+}
+
+private val baseModifier = Modifier.padding(horizontal = 16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
+fun MainContent(state: MainState, sendAction: (MainAudioAction) -> Unit) {
+    val scope = rememberCoroutineScope()
+    val data = state as MainState.Success
+    val sheetState1 = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
 
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Tour") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.sendAction(MainAction.OnBackClick)
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            when (state) {
-                MainState.Loading -> LoadingScreen()
-                is MainState.Error -> ErrorScreen((state as MainState.Error).message)
-                is MainState.Success -> Content(state, viewModel::sendAction)
+    val density = LocalDensity.current
+    val sheetState =
+        rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val navigationBarHeight =
+        with(density) { WindowInsets.navigationBars.getBottom(this).toDp() }
+    BottomSheetScaffold(
+        scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
+        sheetContent = {
+            Crossfade(
+                targetState = sheetState.targetValue,
+                modifier = Modifier.fillMaxSize()
+            ) { state ->
+                if (state == SheetValue.Expanded)
+                    MainAudioController(
+                        title = "Русский музей-импрессионисты",
+                        currentPosition = 0.45f,
+                        duration = "0:30",
+                        isPlaying = false,
+                        onHideClick = {
+                            scope.launch { sheetState.partialExpand() }
+                        },
+                        onSliderValueChange = {}
+                    )
+                else
+                    MiniAudioController()
             }
-        }
-    }
-}
-
-@Composable
-fun Content(state: MainState, sendAction: (MainAction) -> Unit) {
-    val content = state as MainState.Success
-
-    Column(modifier = Modifier.fillMaxSize()) {
-
-        Text(
-            text = "STEP ${content.currentStep}/${content.totalSteps}",
-            modifier = Modifier.padding(16.dp)
-        )
-
-        // Image
-        AsyncImage(
-            model = content.currentStep.images,
-            contentDescription = content.currentStep.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        )
-
-        // Audio controls
-        AudioControls(
-            isPlaying = content.isPlaying,
-            progress = content.audioProgress,
-            onPlayClick = { sendAction(MainAction.OnPlayClick) },
-            onSeek = { sendAction(MainAction.OnSeekAudio(it)) }
-        )
-    }
-}
-
-@Composable
-fun AudioControls(
-    isPlaying: Boolean,
-    progress: Float,
-    onPlayClick: () -> Unit,
-    onSeek: (Float) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        },
+        sheetDragHandle = {},
+        sheetShape = RoundedCornerShape(0.dp),
+        sheetPeekHeight = 60.dp + navigationBarHeight
     ) {
-        IconButton(onClick = onPlayClick) {
-            Icon(
-                if (isPlaying) Icons.Default.PlayArrow else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play"
+        Column(modifier = Modifier.statusBarsPadding()) {
+            ProgressBar(0.2f)
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = baseModifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CloseButton {}
+
+                OptionsButton {}
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Step 3/10",
+                modifier = baseModifier
             )
         }
-
-        Slider(
-            value = progress,
-            onValueChange = onSeek,
-            modifier = Modifier.weight(1f)
-        )
-
-        Text(text = formatTime(progress))
     }
 }
 
-private fun formatTime(seconds: Float): String {
-    val minutes = (seconds / 60).toInt()
-    val remainingSeconds = (seconds % 60).toInt()
-    return "%d:%02d".format(minutes, remainingSeconds)
-}
-
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun MainScreenPreview() {
     WeGoTrip_TestTheme {
-        MainScreen()
+        MainContent(
+            state = MainState.Success(
+                tour = MockData().tour,
+                currentStep = MockData().tourStep,
+                isPlaying = false,
+                audioProgress = 0f,
+                totalSteps = 5
+            )
+        ) {}
     }
 }

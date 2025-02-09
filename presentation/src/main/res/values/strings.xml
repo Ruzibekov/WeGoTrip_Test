@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WeGoTrip_Test</string>
+    <string name="loading_data">Загрузка данных…</string>
+    <string name="audio_tour">Аудио экскурсия</string>
+</resources>

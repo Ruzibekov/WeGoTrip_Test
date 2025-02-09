@@ -14,6 +14,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.hilt.core)
     kapt(libs.hilt.compiler)
 }

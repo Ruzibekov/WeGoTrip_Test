@@ -38,13 +38,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun sendAction(action: MainAction) {
+    fun sendAction(action: MainAudioAction) {
         when(action){
-            MainAction.OnBackClick -> TODO()
-            MainAction.OnNextStep -> TODO()
-            MainAction.OnPlayClick -> TODO()
-            MainAction.OnPreviousStep -> TODO()
-            is MainAction.OnSeekAudio -> TODO()
+            MainAudioAction.OnBackClick -> TODO()
+            MainAudioAction.OnNextStep -> TODO()
+            MainAudioAction.OnPlayClick -> TODO()
+            MainAudioAction.OnPreviousStep -> TODO()
+            is MainAudioAction.OnSeekAudio -> TODO()
         }
     }
 }
