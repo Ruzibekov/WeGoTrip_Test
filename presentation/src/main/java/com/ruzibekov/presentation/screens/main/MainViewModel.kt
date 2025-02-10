@@ -58,17 +58,18 @@ class MainViewModel @Inject constructor(
     private fun loadTour() {
         viewModelScope.launch {
             try {
-                val tour = getTourUseCase().steps[0]
+                val tour = getTourUseCase()
                 _state.update { it.copy(tour = tour) }
 
-                initMediaPlayerUseCase(
-                    tour.audio,
-                    onCompletion = { sendAction(MainAction.OnPauseClick) },
-                    onDuration = { millis ->
-                        _state.update { it.copy(durationInMillis = millis) }
-                    }
-                )
-
+                _state.value.getCurrentTourStep()?.let { tourStep ->
+                    initMediaPlayerUseCase(
+                        tourStep.audio,
+                        onCompletion = { sendAction(MainAction.OnPauseClick) },
+                        onDuration = { millis ->
+                            _state.update { it.copy(durationInMillis = millis) }
+                        }
+                    )
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
             }
@@ -83,7 +84,13 @@ class MainViewModel @Inject constructor(
 
                         playAudioUseCase(
                             speed = _state.value.audioSpeed,
-                            onUpdatePosition = { position -> _state.update { it.copy(currentPositionInMillis = position) } }
+                            onUpdatePosition = { position ->
+                                _state.update {
+                                    it.copy(
+                                        currentPositionInMillis = position
+                                    )
+                                }
+                            }
                         )
 
                         _state.update {

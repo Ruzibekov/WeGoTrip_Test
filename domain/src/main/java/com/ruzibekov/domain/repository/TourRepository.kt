@@ -1,8 +1,8 @@
 package com.ruzibekov.domain.repository
 
-import com.ruzibekov.domain.model.BaseTour
+import com.ruzibekov.domain.model.Tour
 
 interface TourRepository {
 
-    suspend fun getTour(): BaseTour
+    suspend fun getTour(): Tour
 }

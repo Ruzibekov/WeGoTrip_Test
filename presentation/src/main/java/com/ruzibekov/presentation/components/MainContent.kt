@@ -36,89 +36,92 @@ private val baseModifier = Modifier.padding(horizontal = 16.dp)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainContent(state: MainState, sendAction: (MainAction) -> Unit) {
-    val tour = state.tour!!
+    state.getCurrentTourStep()?.let { tourStep ->
 
-    Column(modifier = Modifier.statusBarsPadding()) {
-        ProgressBar(0.2f)
+        Column(modifier = Modifier.statusBarsPadding()) {
+            ProgressBar(
+                progress = state.currentStepIndex.toFloat() / (state.tour?.steps?.size ?: 1).toFloat()
+            )
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-        Row(
-            modifier = baseModifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CloseButton {}
-
-            OptionsButton {}
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "Step 3/10",
-            modifier = baseModifier
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        Text(
-            text = tour.title,
-            modifier = baseModifier,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 28.sp
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        val pagerState = rememberPagerState { tour.images.size }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            HorizontalPager(state = pagerState) { page ->
-                AsyncImage(
-                    model = tour.images[page],
-                    contentDescription = "tour image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Surface(
-                modifier = Modifier.padding(20.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = Color.Black.copy(alpha = 0.5f)
+            Row(
+                modifier = baseModifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "${pagerState.currentPage+1}/${tour.images.size}",
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    color = Color.White,
-                    fontSize = 12.sp
-                )
+                CloseButton {}
+
+                OptionsButton {}
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Step 3/10",
+                modifier = baseModifier
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Text(
+                text = tourStep.title,
+                modifier = baseModifier,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 28.sp
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            val pagerState = rememberPagerState { tourStep.images.size }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                HorizontalPager(state = pagerState) { page ->
+                    AsyncImage(
+                        model = tourStep.images[page],
+                        contentDescription = "tour image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier.padding(20.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.5f)
+                ) {
+                    Text(
+                        text = "${pagerState.currentPage + 1}/${tourStep.images.size}",
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            ScrollablePageIndicator(
+                pagerState = pagerState,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = tourStep.description,
+                modifier = baseModifier
+            )
+
+            val navigationHeight = rememberNavigationBarHeight()
+
+            Spacer(modifier = Modifier.height(30.dp + Constants.MINI_CONTROLLER_HEIGHT.dp + navigationHeight))
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        ScrollablePageIndicator(
-            pagerState = pagerState,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = tour.description,
-            modifier = baseModifier
-        )
-
-        val navigationHeight = rememberNavigationBarHeight()
-
-        Spacer(modifier = Modifier.height(30.dp + Constants.MINI_CONTROLLER_HEIGHT.dp + navigationHeight))
     }
 }

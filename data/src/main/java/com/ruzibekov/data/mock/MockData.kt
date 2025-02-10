@@ -1,12 +1,12 @@
 package com.ruzibekov.data.mock
 
 import com.ruzibekov.data.R
-import com.ruzibekov.domain.model.BaseTour
 import com.ruzibekov.domain.model.Tour
+import com.ruzibekov.domain.model.TourStep
 
 class MockData {
 
-    private val tourStep = Tour(
+    private val tourStep = TourStep(
         title = "Свято-вознесенский Кафедральный собор",
         description = "Впечатляйтесь деревянным Свято-Вознесенским Кафедральным собором, одним из ста чудес света",
         images = listOf(
@@ -19,7 +19,7 @@ class MockData {
         audio = R.raw.svyato_voznesenskiy
     )
 
-    val tour = BaseTour(
+    val tour = Tour(
         title = "Алматы; погружение в жизнь \"южной столицы\" Казахстана",
         steps = listOf(tourStep, tourStep, tourStep)
     )

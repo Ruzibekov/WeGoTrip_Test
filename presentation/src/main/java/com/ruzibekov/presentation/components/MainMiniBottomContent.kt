@@ -39,100 +39,101 @@ fun MainMiniBottomContent(
     sendAction: (MainAction) -> Unit,
     onOptionsClick: () -> Unit
 ) {
-    val tour = state.tour!!
+    state.getCurrentTourStep()?.let { tourStep ->
 
-    Column(
-        modifier = Modifier
-            .height(Constants.MINI_CONTROLLER_HEIGHT.dp)
-            .clickable(onClick = onOptionsClick)
-            .padding(bottom = (Constants.MINI_CONTROLLER_HEIGHT / 4).dp),
-    ) {
-        LinearProgressIndicator(
-            progress = { state.getPositionForSlider() },
-            modifier = Modifier.fillMaxWidth(),
-            trackColor = WeGoTripColors.Stroke,
-            color = WeGoTripColors.Primary
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .height(Constants.MINI_CONTROLLER_HEIGHT.dp)
+                .clickable(onClick = onOptionsClick)
+                .padding(bottom = (Constants.MINI_CONTROLLER_HEIGHT / 4).dp),
         ) {
-
-            Icon(
-                painter = painterResource(R.drawable.ic_options_vertical),
-                contentDescription = "vertical options button",
-                modifier = Modifier.size(24.dp)
+            LinearProgressIndicator(
+                progress = { state.getPositionForSlider() },
+                modifier = Modifier.fillMaxWidth(),
+                trackColor = WeGoTripColors.Stroke,
+                color = WeGoTripColors.Primary
             )
 
-            IconButton(
-                onClick = {
-                    sendAction(
-                        if (state.isPlaying) MainAction.OnPauseClick
-                        else MainAction.OnPlayClick(tour.audio)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    painter = painterResource(R.drawable.ic_options_vertical),
+                    contentDescription = "vertical options button",
+                    modifier = Modifier.size(24.dp)
+                )
+
+                IconButton(
+                    onClick = {
+                        sendAction(
+                            if (state.isPlaying) MainAction.OnPauseClick
+                            else MainAction.OnPlayClick(tourStep.audio)
+                        )
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (state.isPlaying) R.drawable.ic_pause
+                            else R.drawable.ic_play
+                        ),
+                        contentDescription = "vertical options button",
                     )
-                },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (state.isPlaying) R.drawable.ic_pause
-                        else R.drawable.ic_play
-                    ),
-                    contentDescription = "vertical options button",
-                )
-            }
+                }
 
-            Text(
-                text = tour.title,
-                modifier = Modifier.weight(1f),
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            IconButton(
-                onClick = {
-                    sendAction(MainAction.OnRewindAudioClick)
-                },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_rewind),
-                    contentDescription = "vertical options button",
-                )
-            }
-
-            Surface(
-                onClick = {
-                    sendAction(MainAction.ChangeSpeed(state.audioSpeed))
-                },
-                color = Color.Transparent,
-                shape = RoundedCornerShape(8.dp)
-            ) {
                 Text(
-                    text = "${state.audioSpeed.speed.formatSpeed()}x",
-                    modifier = Modifier.size(48.dp, 24.dp),
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center
+                    text = tourStep.title,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            IconButton(
-                onClick = {
-                    sendAction(MainAction.OnFastForwardClick)
-                },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_rewind),
-                    contentDescription = "vertical options button",
-                    modifier = Modifier.rotate(180f)
-                )
+                IconButton(
+                    onClick = {
+                        sendAction(MainAction.OnRewindAudioClick)
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_rewind),
+                        contentDescription = "vertical options button",
+                    )
+                }
+
+                Surface(
+                    onClick = {
+                        sendAction(MainAction.ChangeSpeed(state.audioSpeed))
+                    },
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "${state.audioSpeed.speed.formatSpeed()}x",
+                        modifier = Modifier.size(48.dp, 24.dp),
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        sendAction(MainAction.OnFastForwardClick)
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_rewind),
+                        contentDescription = "vertical options button",
+                        modifier = Modifier.rotate(180f)
+                    )
+                }
             }
         }
     }

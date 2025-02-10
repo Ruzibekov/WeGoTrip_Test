@@ -6,12 +6,14 @@ import com.ruzibekov.domain.model.Tour
 
 data class MainState(
     val tour: Tour? = null,
+    val currentStepIndex: Int = 0,
     val isPlaying: Boolean = false,
     val audioSpeed: AudioSpeed = AudioSpeed.NORMAL,
     val currentPositionInMillis: Int = 0,
     val durationInMillis: Int = 0,
     val error: String? = null
 ){
+    fun getCurrentTourStep() = tour?.steps?.getOrNull(currentStepIndex)
     fun getPositionForSlider() = currentPositionInMillis.toFloat() / durationInMillis.toFloat()
 }
 

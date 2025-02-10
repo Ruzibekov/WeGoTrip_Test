@@ -1,6 +1,7 @@
 package com.ruzibekov.presentation.components
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -43,6 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ruzibekov.domain.model.Tour
+import com.ruzibekov.domain.model.TourStep
 import com.ruzibekov.presentation.R
 import com.ruzibekov.presentation.extension.formatSpeed
 import com.ruzibekov.presentation.extension.formatToTime
@@ -66,7 +72,6 @@ fun MainBottomContent(
         modifier = Modifier
             .systemBarsPadding()
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         TopBar(
             title = tour.title,
@@ -79,9 +84,9 @@ fun MainBottomContent(
 
         Crossfade(show) {
             if (!it)
-                MainAudioContentPlayer(state, sendAction)
+                MainBottomAudioControllerContent(state, sendAction)
             else
-                MainAudioContent2()
+                MainBottomStepsContent(state.tour)
         }
     }
 }
@@ -89,157 +94,202 @@ fun MainBottomContent(
 private var positionChangeJob: Job? = null
 
 @Composable
-fun MainAudioContentPlayer(
+fun MainBottomAudioControllerContent(
     state: MainState,
     sendAction: (MainAction) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val tour = state.tour!!
-    Column(modifier = Modifier.fillMaxSize()) {
+    state.getCurrentTourStep()?.let { tourStep ->
 
-        Card(
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
-            Column(modifier = Modifier.padding(all = 16.dp)) {
+        val scope = rememberCoroutineScope()
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
 
-                Text(
-                    text = tour.title,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    lineHeight = 24.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Card(
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(modifier = Modifier.padding(all = 16.dp)) {
 
-                var position by remember {
-                    mutableFloatStateOf(state.getPositionForSlider())
-                }
-
-                LaunchedEffect(state) {
-                    position = if (positionChangeJob?.isActive == true) position else state.getPositionForSlider()
-                }
-
-                Slider(
-                    value = position,
-                    onValueChange = {
-                        position = it
-                        positionChangeJob?.cancel()
-                        positionChangeJob = scope.launch {
-                            delay(100)
-                            sendAction(MainAction.ChangePosition(it))
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    )
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
                     Text(
-                        text = (position * state.durationInMillis).toInt().formatToTime(),
-                        fontSize = 12.sp
+                        text = tourStep.title,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        lineHeight = 24.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = state.durationInMillis.formatToTime(),
-                        fontSize = 12.sp
+
+                    var position by remember {
+                        mutableFloatStateOf(state.getPositionForSlider())
+                    }
+
+                    LaunchedEffect(state) {
+                        position =
+                            if (positionChangeJob?.isActive == true) position else state.getPositionForSlider()
+                    }
+
+                    Slider(
+                        value = position,
+                        onValueChange = {
+                            position = it
+                            positionChangeJob?.cancel()
+                            positionChangeJob = scope.launch {
+                                delay(100)
+                                sendAction(MainAction.ChangePosition(it))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
                     )
-                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Box(modifier = Modifier.size(48.dp, 24.dp)) //start padding
-
-                    IconButton(
-                        onClick = {
-                            sendAction(MainAction.OnRewindAudioClick)
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_rewind),
-                            contentDescription = "Forward 10 seconds",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-
-                    Surface(
-                        onClick = {
-                            sendAction(
-                                if (state.isPlaying)
-                                    MainAction.OnPauseClick
-                                else
-                                    MainAction.OnPlayClick(tour.audio)
-                            )
-                        },
-                        color = WeGoTripColors.Primary,
-                        shape = CircleShape
-                    ) {
-                        Icon(
-                            painter = painterResource(if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
-                            contentDescription = if (state.isPlaying) "Pause" else "Play",
-                            modifier = Modifier
-                                .padding(13.dp)
-                                .offset(x = if (state.isPlaying) 0.dp else 3.dp)
-                                .size(48.dp),
-                            tint = Color.White
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            sendAction(MainAction.OnFastForwardClick)
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_rewind),
-                            contentDescription = "Forward 10 seconds",
-                            modifier = Modifier
-                                .size(48.dp)
-                                .rotate(180f)
-                        )
-                    }
-
-                    Surface(
-                        onClick = {
-                            sendAction(MainAction.ChangeSpeed(state.audioSpeed))
-                        },
-                        color = Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "${state.audioSpeed.speed.formatSpeed()}x",
-                            modifier = Modifier.size(48.dp, 24.dp),
-                            fontWeight = FontWeight.ExtraBold,
-                            textAlign = TextAlign.Center
+                            text = (position * state.durationInMillis).toInt().formatToTime(),
+                            fontSize = 12.sp
                         )
+                        Text(
+                            text = state.durationInMillis.formatToTime(),
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Box(modifier = Modifier.size(48.dp, 24.dp)) //start padding
+
+                        IconButton(
+                            onClick = {
+                                sendAction(MainAction.OnRewindAudioClick)
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_rewind),
+                                contentDescription = "Forward 10 seconds",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+
+                        Surface(
+                            onClick = {
+                                sendAction(
+                                    if (state.isPlaying)
+                                        MainAction.OnPauseClick
+                                    else
+                                        MainAction.OnPlayClick(tourStep.audio)
+                                )
+                            },
+                            color = WeGoTripColors.Primary,
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                painter = painterResource(if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                                contentDescription = if (state.isPlaying) "Pause" else "Play",
+                                modifier = Modifier
+                                    .padding(13.dp)
+                                    .offset(x = if (state.isPlaying) 0.dp else 3.dp)
+                                    .size(48.dp),
+                                tint = Color.White
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                sendAction(MainAction.OnFastForwardClick)
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_rewind),
+                                contentDescription = "Forward 10 seconds",
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .rotate(180f)
+                            )
+                        }
+
+                        Surface(
+                            onClick = {
+                                sendAction(MainAction.ChangeSpeed(state.audioSpeed))
+                            },
+                            color = Color.Transparent,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "${state.audioSpeed.speed.formatSpeed()}x",
+                                modifier = Modifier.size(48.dp, 24.dp),
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = tourStep.description,
+            )
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = tour.description,
-        )
     }
 }
 
 @Composable
-fun MainAudioContent2() {
+fun MainBottomStepsContent(tour: Tour) {
+    LazyColumn {
+        itemsIndexed(tour.steps) { index, item ->
+            ItemTourStep(
+                item,
+                current = index + 1,
+                max = tour.steps.size,
+                onClick = {}
+            )
+        }
+    }
+}
 
+@Composable
+fun ItemTourStep(
+    data: TourStep,
+    current: Int,
+    max: Int,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$current/$max",
+            fontWeight = FontWeight.ExtraBold,
+            color = WeGoTripColors.LightGray
+        )
+
+        Spacer(modifier = Modifier.width(20.dp))
+
+        Text(
+            text = data.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
 }
 
 @Composable
@@ -250,7 +300,9 @@ private fun TopBar(
     onMenuClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
