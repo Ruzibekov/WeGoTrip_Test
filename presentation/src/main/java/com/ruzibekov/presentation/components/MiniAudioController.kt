@@ -32,7 +32,9 @@ fun MiniAudioController(
     isPlaying: Boolean,
     onOptionsClick: () -> Unit,
     onPlayClick: () -> Unit,
-    onPauseClick: () -> Unit
+    onPauseClick: () -> Unit,
+    onRewindClick: () -> Unit,
+    onFastForwardClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -80,7 +82,7 @@ fun MiniAudioController(
             )
 
             IconButton(
-                onClick = {},
+                onClick = onRewindClick,
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -100,7 +102,7 @@ fun MiniAudioController(
             }
 
             IconButton(
-                onClick = {},
+                onClick = onFastForwardClick,
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -116,5 +118,5 @@ fun MiniAudioController(
 @Preview(showBackground = true)
 @Composable
 private fun MiniAudioControllerPreview() {
-    WeGoTrip_TestTheme { MiniAudioController(true, {}, {}, {}) }
+    WeGoTrip_TestTheme { MiniAudioController(true, {}, {}, {}, {}, {}) }
 }

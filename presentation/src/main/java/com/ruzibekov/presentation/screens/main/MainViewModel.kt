@@ -2,9 +2,11 @@ package com.ruzibekov.presentation.screens.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ruzibekov.domain.usecases.FastForwardAudioUseCase
 import com.ruzibekov.domain.usecases.GetTourUseCase
 import com.ruzibekov.domain.usecases.PauseAudioUseCase
 import com.ruzibekov.domain.usecases.PlayAudioUseCase
+import com.ruzibekov.domain.usecases.RewindAudioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,9 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val getTourUseCase: GetTourUseCase,
     private val playAudioUseCase: PlayAudioUseCase,
-    private val pauseAudioUseCase: PauseAudioUseCase
+    private val pauseAudioUseCase: PauseAudioUseCase,
+    private val rewindAudioUseCase: RewindAudioUseCase,
+    private val fastForwardAudioUseCase: FastForwardAudioUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -49,6 +53,14 @@ class MainViewModel @Inject constructor(
                     MainAction.OnPauseClick -> {
                         pauseAudioUseCase()
                         _state.update { it.copy(isPlaying = false, error = null) }
+                    }
+
+                    MainAction.OnFastForwardClick -> {
+                        fastForwardAudioUseCase()
+                    }
+
+                    MainAction.OnRewindAudioClick -> {
+                        rewindAudioUseCase()
                     }
                 }
             } catch (e: Exception) {

@@ -35,4 +35,14 @@ class AudioRepositoryImpl @Inject constructor(
     override suspend fun pauseAudio() {
         if (audioPlayer.isPlaying) audioPlayer.pause()
     }
+
+    override suspend fun rewind() {
+        val newPosition = (audioPlayer.currentPosition - 5000).coerceAtLeast(0)
+        audioPlayer.seekTo(newPosition)
+    }
+
+    override suspend fun fastForward() {
+        val newPosition = (audioPlayer.currentPosition + 5000).coerceAtMost(audioPlayer.duration)
+        audioPlayer.seekTo(newPosition)
+    }
 }

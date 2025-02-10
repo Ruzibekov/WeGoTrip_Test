@@ -12,4 +12,6 @@ data class MainState(
 sealed interface MainAction {
     data class OnPlayClick(@RawRes val resourceId: Int) : MainAction
     data object OnPauseClick : MainAction
+    data object OnRewindAudioClick : MainAction
+    data object OnFastForwardClick : MainAction
 }

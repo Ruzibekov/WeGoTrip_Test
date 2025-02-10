@@ -48,6 +48,12 @@ fun MainBottomBarContent(
                 },
                 onPauseClick = {
                     sendAction(MainAction.OnPauseClick)
+                },
+                onRewindClick = {
+                    sendAction(MainAction.OnRewindAudioClick)
+                },
+                onFastForwardClick = {
+                    sendAction(MainAction.OnFastForwardClick)
                 }
             )
     }
