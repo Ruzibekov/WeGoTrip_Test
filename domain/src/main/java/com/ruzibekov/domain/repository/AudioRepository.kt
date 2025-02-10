@@ -7,7 +7,7 @@ interface AudioRepository {
 
     suspend fun getDefaultValues(): Pair<Boolean, AudioSpeed>?
 
-    suspend fun play(resourceId: Int, speed: AudioSpeed, onCompletion: () -> Unit)
+    suspend fun play(resourceId: Int, speed: AudioSpeed, onCompletion: () -> Unit): Float
 
     fun getCurrentPosition(): Flow<Float>
 

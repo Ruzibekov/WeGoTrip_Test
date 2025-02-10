@@ -69,10 +69,10 @@ class MainViewModel @Inject constructor(
             try {
                 when (action) {
                     is MainAction.OnPlayClick -> {
-                        playAudioUseCase(action.resourceId, _state.value.audioSpeed){
+                        val position = playAudioUseCase(action.resourceId, _state.value.audioSpeed){
                             sendAction(MainAction.OnPauseClick)
                         }
-                        _state.update { it.copy(isPlaying = true, error = null) }
+                        _state.update { it.copy(isPlaying = true, error = null, position = position) }
                     }
 
                     MainAction.OnPauseClick -> {

@@ -2,6 +2,8 @@ package com.ruzibekov.data.repository
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.util.Log
+import com.ruzibekov.data.getPositionForSliders
 import com.ruzibekov.domain.model.AudioSpeed
 import com.ruzibekov.domain.repository.AudioRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -56,12 +58,14 @@ class AudioRepositoryImpl @Inject constructor(
         audioPlayer.setOnCompletionListener {
             onCompletion()
         }
+
+        audioPlayer.getPositionForSliders()
     }
 
     override fun getCurrentPosition() = flow {
         while (true) {
             if (audioPlayer.isPlaying)
-                emit((audioPlayer.currentPosition.toFloat() / audioPlayer.duration.toFloat()))
+                emit(audioPlayer.getPositionForSliders())
             delay(500)
         }
     }.flowOn(Dispatchers.Default)
@@ -89,6 +93,7 @@ class AudioRepositoryImpl @Inject constructor(
     }
 
     override suspend fun changePosition(newValue: Float) {
+        Log.i("RRR", "changePosition: $newValue")
         audioPlayer.seekTo((newValue * audioPlayer.duration).toInt())
     }
 }
