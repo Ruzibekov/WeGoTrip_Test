@@ -20,9 +20,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ruzibekov.domain.constatns.Constants
 import com.ruzibekov.presentation.components.ErrorScreen
 import com.ruzibekov.presentation.components.LoadingScreen
-import com.ruzibekov.presentation.components.MainAudioController
+import com.ruzibekov.presentation.components.MainBottomContent
 import com.ruzibekov.presentation.components.MainContent
-import com.ruzibekov.presentation.components.MiniAudioController
+import com.ruzibekov.presentation.components.MainMiniBottomContent
 import com.ruzibekov.presentation.extension.rememberNavigationBarHeight
 import kotlinx.coroutines.launch
 
@@ -62,20 +62,13 @@ fun Content(state: MainState, sendAction: (MainAction) -> Unit) {
                 modifier = Modifier.fillMaxSize()
             ) { sheetValue ->
                 if (sheetValue == SheetValue.Expanded)
-                    MainAudioController(
-                        title = "Russkiy Muzey",
-                        currentPosition = 0.45f,
-                        duration = "0:30",
-                        isPlaying = false,
-                        onHideClick = {
-                            scope.launch { sheetState.partialExpand() }
-                        },
-                        onSliderValueChange = {}
-                    )
+                    MainBottomContent(state, sendAction, onHideClick = {
+                        scope.launch { sheetState.partialExpand() }
+                    })
                 else
-                    MiniAudioController(state, sendAction) {
+                    MainMiniBottomContent(state, sendAction, onOptionsClick = {
                         scope.launch { sheetState.expand() }
-                    }
+                    })
             }
         },
         sheetDragHandle = {},

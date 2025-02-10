@@ -36,7 +36,7 @@ private val baseModifier = Modifier.padding(horizontal = 16.dp)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainContent(state: MainState, sendAction: (MainAction) -> Unit) {
-    val tour = state.tour!!.steps[0]
+    val tour = state.tour!!
 
     Column(modifier = Modifier.statusBarsPadding()) {
         ProgressBar(0.2f)

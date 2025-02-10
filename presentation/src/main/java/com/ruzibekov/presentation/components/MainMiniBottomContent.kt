@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -33,17 +34,18 @@ import com.ruzibekov.presentation.screens.main.MainState
 import com.ruzibekov.presentation.theme.WeGoTripColors
 
 @Composable
-fun MiniAudioController(
+fun MainMiniBottomContent(
     state: MainState,
     sendAction: (MainAction) -> Unit,
     onOptionsClick: () -> Unit
 ) {
-    val tour = state.tour!!.steps[0]
+    val tour = state.tour!!
 
     Column(
         modifier = Modifier
             .height(Constants.MINI_CONTROLLER_HEIGHT.dp)
-            .clickable(onClick = onOptionsClick),
+            .clickable(onClick = onOptionsClick)
+            .padding(bottom = (Constants.MINI_CONTROLLER_HEIGHT / 4).dp),
     ) {
         LinearProgressIndicator(
             progress = { state.position },
@@ -85,7 +87,7 @@ fun MiniAudioController(
             }
 
             Text(
-                text = "Long text Long text Long text Long text Long text ",
+                text = tour.title,
                 modifier = Modifier.weight(1f),
                 fontSize = 14.sp,
                 lineHeight = 14.sp,
@@ -110,6 +112,7 @@ fun MiniAudioController(
                     sendAction(MainAction.ChangeSpeed(state.audioSpeed))
                 },
                 color = Color.Transparent,
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
                     text = "${state.audioSpeed.speed.formatSpeed()}x",

@@ -18,5 +18,6 @@ sealed interface MainAction {
     data object OnRewindAudioClick : MainAction
     data object OnFastForwardClick : MainAction
     data class ChangeSpeed(val currentSpeed: AudioSpeed) : MainAction
+    data class ChangePosition(val value: Float) : MainAction
 }
 

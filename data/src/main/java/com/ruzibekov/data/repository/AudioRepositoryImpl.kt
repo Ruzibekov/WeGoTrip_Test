@@ -24,17 +24,19 @@ class AudioRepositoryImpl @Inject constructor(
         if (audioPlayer.isPlaying)
             Pair(
                 audioPlayer.isPlaying,
-                AudioSpeed.entries.firstOrNull { it.speed == audioPlayer.playbackParams.speed }
-                    ?: AudioSpeed.NORMAL
+                AudioSpeed.entries.firstOrNull {
+                    it.speed == audioPlayer.playbackParams.speed
+                } ?: AudioSpeed.NORMAL
             )
-    else null
+        else null
 
     private var currentResourceId: Int? = null
     private var positionTrackingJob: Job? = null
 
     override suspend fun play(
         resourceId: Int,
-        speed: AudioSpeed
+        speed: AudioSpeed,
+        onCompletion: () -> Unit
     ) = withContext(Dispatchers.IO) {
 
         if (currentResourceId != resourceId) {
@@ -50,6 +52,10 @@ class AudioRepositoryImpl @Inject constructor(
 
         audioPlayer.playbackParams = audioPlayer.playbackParams.setSpeed(speed.speed)
         audioPlayer.start()
+
+        audioPlayer.setOnCompletionListener {
+            onCompletion()
+        }
     }
 
     override fun getCurrentPosition() = flow {
@@ -80,5 +86,9 @@ class AudioRepositoryImpl @Inject constructor(
         if (audioPlayer.isPlaying)
             audioPlayer.playbackParams = audioPlayer.playbackParams.setSpeed(new.speed)
         return new
+    }
+
+    override suspend fun changePosition(newValue: Float) {
+        audioPlayer.seekTo((newValue * audioPlayer.duration).toInt())
     }
 }

@@ -1,23 +1,20 @@
 package com.ruzibekov.presentation.components
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,78 +22,79 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ruzibekov.presentation.R
+import com.ruzibekov.presentation.extension.formatSpeed
+import com.ruzibekov.presentation.screens.main.MainAction
+import com.ruzibekov.presentation.screens.main.MainState
 import com.ruzibekov.presentation.theme.WeGoTripColors
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun MainAudioController(
-    title: String,
-    currentPosition: Float,
-    duration: String,
-    isPlaying: Boolean,
-    modifier: Modifier = Modifier,
-    onSliderValueChange: (Float) -> Unit,
+fun MainBottomContent(
+    state: MainState,
+    sendAction: (MainAction) -> Unit,
     onHideClick: () -> Unit
 ) {
+    val tour = state.tour!!
     var show by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .systemBarsPadding()
             .fillMaxSize()
             .padding(16.dp)
     ) {
         TopBar(
-            title, !show, onHideClick, onMenuClick = {
-                show = !show
-            }
+            title = tour.title,
+            showMenu = !show,
+            onHideClick = onHideClick,
+            onMenuClick = { show = !show }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Crossfade(show) {
             if (!it)
-                MainAudioContent1(
-                    currentPosition,
-                    duration,
-                    isPlaying,
-                    modifier,
-                    onSliderValueChange,
-                )
+                MainAudioContentPlayer(state, sendAction)
             else
                 MainAudioContent2()
         }
     }
 }
 
+private var positionChangeJob: Job? = null
+
 @Composable
-fun MainAudioContent1(
-    currentPosition: Float,
-    duration: String,
-    isPlaying: Boolean,
-    modifier: Modifier = Modifier,
-    onSliderValueChange: (Float) -> Unit,
+fun MainAudioContentPlayer(
+    state: MainState,
+    sendAction: (MainAction) -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .systemBarsPadding()
-            .fillMaxSize()
-    ) {
+    val scope = rememberCoroutineScope()
+    val tour = state.tour!!
+    Column(modifier = Modifier.fillMaxSize()) {
 
         Card(
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
@@ -105,15 +103,32 @@ fun MainAudioContent1(
             Column(modifier = Modifier.padding(all = 16.dp)) {
 
                 Text(
-                    text = "Dobro pojalovat v zimniy dvorets",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp
+                    text = tour.title,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    lineHeight = 24.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
+                var position by remember {
+                    mutableFloatStateOf(state.position)
+                }
+
+                LaunchedEffect(state) {
+                    position = if (positionChangeJob?.isActive == true) position else state.position
+                }
+
                 Slider(
-                    value = currentPosition,
-                    onValueChange = onSliderValueChange,
+                    value = position,
+                    onValueChange = {
+                        position = it
+                        positionChangeJob?.cancel()
+                        positionChangeJob = scope.launch {
+                            delay(100)
+                            sendAction(MainAction.ChangePosition(it))
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
@@ -127,10 +142,12 @@ fun MainAudioContent1(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = formatTime(currentPosition),
+                        text = "--",
+                        fontSize = 12.sp
                     )
                     Text(
-                        text = duration,
+                        text = "--",
+                        fontSize = 12.sp
                     )
                 }
 
@@ -142,33 +159,70 @@ fun MainAudioContent1(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { }) {
+
+                    Box(modifier = Modifier.size(48.dp, 24.dp)) //start padding
+
+                    IconButton(
+                        onClick = {
+                            sendAction(MainAction.OnRewindAudioClick)
+                        },
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Rewind 10 seconds"
+                            painter = painterResource(R.drawable.ic_rewind),
+                            contentDescription = "Forward 10 seconds",
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+
+                    Surface(
+                        onClick = {
+                            sendAction(
+                                if (state.isPlaying)
+                                    MainAction.OnPauseClick
+                                else
+                                    MainAction.OnPlayClick(tour.audio)
+                            )
+                        },
+                        color = WeGoTripColors.Primary,
+                        shape = CircleShape
+                    ) {
+                        Icon(
+                            painter = painterResource(if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                            contentDescription = if (state.isPlaying) "Pause" else "Play",
+                            modifier = Modifier
+                                .padding(13.dp)
+                                .offset(x = if (state.isPlaying) 0.dp else 3.dp)
+                                .size(48.dp),
+                            tint = Color.White
                         )
                     }
 
                     IconButton(
-                        onClick = { },
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            )
+                        onClick = {
+                            sendAction(MainAction.OnFastForwardClick)
+                        },
                     ) {
                         Icon(
-                            imageVector = if (isPlaying) Icons.Default.Delete else Icons.Default.PlayArrow,
-                            contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            painter = painterResource(R.drawable.ic_rewind),
+                            contentDescription = "Forward 10 seconds",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .rotate(180f)
                         )
                     }
 
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Default.Done,
-                            contentDescription = "Forward 10 seconds"
+                    Surface(
+                        onClick = {
+                            sendAction(MainAction.ChangeSpeed(state.audioSpeed))
+                        },
+                        color = Color.Transparent,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "${state.audioSpeed.speed.formatSpeed()}x",
+                            modifier = Modifier.size(48.dp, 24.dp),
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -211,18 +265,25 @@ private fun TopBar(
             )
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = stringResource(R.string.audio_tour),
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = WeGoTripColors.Gray,
                 lineHeight = 12.sp,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
             )
         }
 

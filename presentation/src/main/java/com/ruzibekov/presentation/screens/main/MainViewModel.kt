@@ -3,6 +3,7 @@ package com.ruzibekov.presentation.screens.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ruzibekov.domain.usecases.ChangeAudioPositionUseCase
 import com.ruzibekov.domain.usecases.ChangeAudioSpeedUseCase
 import com.ruzibekov.domain.usecases.FastForwardAudioUseCase
 import com.ruzibekov.domain.usecases.GetAudioDefaultValuesUseCase
@@ -25,11 +26,12 @@ class MainViewModel @Inject constructor(
     private val getTourUseCase: GetTourUseCase,
     private val getAudioDefaultValuesUseCase: GetAudioDefaultValuesUseCase,
     private val playAudioUseCase: PlayAudioUseCase,
-    private val getAudioPositionUseCase: GetAudioPositionUseCase,
     private val pauseAudioUseCase: PauseAudioUseCase,
     private val rewindAudioUseCase: RewindAudioUseCase,
     private val fastForwardAudioUseCase: FastForwardAudioUseCase,
     private val changeAudioSpeedUseCase: ChangeAudioSpeedUseCase,
+    private val changeAudioPositionUseCase: ChangeAudioPositionUseCase,
+    getAudioPositionUseCase: GetAudioPositionUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -55,7 +57,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val tour = getTourUseCase()
-                _state.update { it.copy(tour = tour) }
+                _state.update { it.copy(tour = tour.steps[0]) }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
             }
@@ -67,7 +69,9 @@ class MainViewModel @Inject constructor(
             try {
                 when (action) {
                     is MainAction.OnPlayClick -> {
-                        playAudioUseCase(action.resourceId, _state.value.audioSpeed)
+                        playAudioUseCase(action.resourceId, _state.value.audioSpeed){
+                            sendAction(MainAction.OnPauseClick)
+                        }
                         _state.update { it.copy(isPlaying = true, error = null) }
                     }
 
@@ -87,6 +91,10 @@ class MainViewModel @Inject constructor(
                     is MainAction.ChangeSpeed -> {
                         val newSpeed = changeAudioSpeedUseCase(action.currentSpeed)
                         _state.update { it.copy(audioSpeed = newSpeed) }
+                    }
+
+                    is MainAction.ChangePosition -> {
+                        changeAudioPositionUseCase(action.value)
                     }
                 }
             } catch (e: Exception) {
