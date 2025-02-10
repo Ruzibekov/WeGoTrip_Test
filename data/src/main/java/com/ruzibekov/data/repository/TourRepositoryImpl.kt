@@ -1,6 +1,6 @@
 package com.ruzibekov.data.repository
 
-import com.ruzibekov.domain.mock.MockData
+import com.ruzibekov.data.mock.MockData
 import com.ruzibekov.domain.model.Tour
 import com.ruzibekov.domain.repository.TourRepository
 import javax.inject.Inject

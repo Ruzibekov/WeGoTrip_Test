@@ -28,14 +28,14 @@ import coil.compose.AsyncImage
 import com.ruzibekov.domain.constatns.Constants
 import com.ruzibekov.domain.model.TourStep
 import com.ruzibekov.presentation.extension.rememberNavigationBarHeight
-import com.ruzibekov.presentation.screens.main.MainAudioAction
+import com.ruzibekov.presentation.screens.main.MainAction
 
 
 private val baseModifier = Modifier.padding(horizontal = 16.dp)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainContent(tour: TourStep, sendAction: (MainAudioAction) -> Unit) {
+fun MainContent(tour: TourStep, sendAction: (MainAction) -> Unit) {
     Column(modifier = Modifier.statusBarsPadding()) {
         ProgressBar(0.2f)
 
@@ -93,7 +93,7 @@ fun MainContent(tour: TourStep, sendAction: (MainAudioAction) -> Unit) {
                 color = Color.Black.copy(alpha = 0.5f)
             ) {
                 Text(
-                    text = "${pagerState.currentPage}/${tour.images.size}",
+                    text = "${pagerState.currentPage+1}/${tour.images.size}",
                     modifier = Modifier.padding(horizontal = 10.dp),
                     color = Color.White,
                     fontSize = 12.sp

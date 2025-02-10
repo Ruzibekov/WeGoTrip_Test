@@ -8,20 +8,27 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import com.ruzibekov.domain.model.TourStep
+import com.ruzibekov.presentation.screens.main.MainAction
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainBottomBarContent(sheetState: SheetState) {
+fun MainBottomBarContent(
+    sheetState: SheetState,
+    tour: TourStep,
+    isPlaying: Boolean,
+    sendAction: (MainAction) -> Unit
+) {
     val scope = rememberCoroutineScope()
 
     Crossfade(
         targetState = sheetState.targetValue,
         modifier = Modifier.fillMaxSize()
-    ) { state ->
-        if (state == SheetValue.Expanded)
+    ) { sheetValue ->
+        if (sheetValue == SheetValue.Expanded)
             MainAudioController(
-                title = "Русский музей-импрессионисты",
+                title = "Russkiy Muzey",
                 currentPosition = 0.45f,
                 duration = "0:30",
                 isPlaying = false,
@@ -31,8 +38,17 @@ fun MainBottomBarContent(sheetState: SheetState) {
                 onSliderValueChange = {}
             )
         else
-            MiniAudioController(onOptionsClick = {
-                scope.launch { sheetState.expand() }
-            })
+            MiniAudioController(
+                isPlaying = isPlaying,
+                onOptionsClick = {
+                    scope.launch { sheetState.expand() }
+                },
+                onPlayClick = {
+                    sendAction(MainAction.OnPlayClick(tour.audio))
+                },
+                onPauseClick = {
+                    sendAction(MainAction.OnPauseClick)
+                }
+            )
     }
 }

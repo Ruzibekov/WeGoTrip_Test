@@ -4,5 +4,5 @@ data class TourStep(
     val title: String,
     val description: String,
     val images: List<String>,
-    val audioUrl: String,
+    val audio: Int,
 )

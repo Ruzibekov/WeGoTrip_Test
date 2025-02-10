@@ -3,18 +3,21 @@ package com.ruzibekov.presentation.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ruzibekov.domain.usecases.GetTourUseCase
+import com.ruzibekov.domain.usecases.PlayAudioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getTourUseCase: GetTourUseCase
+    private val getTourUseCase: GetTourUseCase,
+    private val playAudioUseCase: PlayAudioUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<MainState>(MainState.Loading)
+    private val _state = MutableStateFlow(MainState())
     val state = _state.asStateFlow()
 
     init {
@@ -25,26 +28,29 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val tour = getTourUseCase()
-                _state.value = MainState.Success(
-                    tour = tour,
-                    currentStep = tour.steps.first(),
-                    isPlaying = false,
-                    audioProgress = 0f,
-                    totalSteps = tour.steps.size
-                )
+                _state.update { it.copy(tour = tour) }
             } catch (e: Exception) {
-                _state.value = MainState.Error(e.message ?: "Unknown error")
+                _state.update { it.copy(error = e.message) }
             }
         }
     }
 
-    fun sendAction(action: MainAudioAction) {
-        when(action){
-            MainAudioAction.OnBackClick -> TODO()
-            MainAudioAction.OnNextStep -> TODO()
-            MainAudioAction.OnPlayClick -> TODO()
-            MainAudioAction.OnPreviousStep -> TODO()
-            is MainAudioAction.OnSeekAudio -> TODO()
+    fun sendAction(action: MainAction) {
+        viewModelScope.launch {
+            try {
+                when (action) {
+                    is MainAction.OnPlayClick -> {
+                        playAudioUseCase(action.resourceId)
+                        _state.update { it.copy(isPlaying = true, error = null) }
+                    }
+
+                    MainAction.OnPauseClick -> {
+                        _state.update { it.copy(isPlaying = false, error = null) }
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
         }
     }
 }

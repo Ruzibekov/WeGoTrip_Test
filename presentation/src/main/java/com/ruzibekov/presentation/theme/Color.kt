@@ -15,4 +15,5 @@ object WeGoTripColors {
     val Primary = Color(0xFF219ebc)
     val LightGray = Color(0xFFD3D3D3)
     val Gray = Color(0xFF808080)
+    val Stroke = Color(0x1A2196F3)
 }
