@@ -26,16 +26,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ruzibekov.domain.constatns.Constants
-import com.ruzibekov.domain.model.TourStep
 import com.ruzibekov.presentation.extension.rememberNavigationBarHeight
 import com.ruzibekov.presentation.screens.main.MainAction
+import com.ruzibekov.presentation.screens.main.MainState
 
 
 private val baseModifier = Modifier.padding(horizontal = 16.dp)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainContent(tour: TourStep, sendAction: (MainAction) -> Unit) {
+fun MainContent(state: MainState, sendAction: (MainAction) -> Unit) {
+    val tour = state.tour!!.steps[0]
+
     Column(modifier = Modifier.statusBarsPadding()) {
         ProgressBar(0.2f)
 

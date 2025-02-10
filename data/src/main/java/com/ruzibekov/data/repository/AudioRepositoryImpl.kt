@@ -2,6 +2,7 @@ package com.ruzibekov.data.repository
 
 import android.content.Context
 import android.media.MediaPlayer
+import com.ruzibekov.domain.model.AudioSpeed
 import com.ruzibekov.domain.repository.AudioRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -17,20 +18,22 @@ class AudioRepositoryImpl @Inject constructor(
 
     private var currentResourceId: Int? = null
 
-    override suspend fun playAudio(resourceId: Int) = withContext(Dispatchers.IO) {
-        if (currentResourceId != resourceId) {
-            currentResourceId = resourceId
-            audioPlayer.reset()
+    override suspend fun playAudio(resourceId: Int, speed: AudioSpeed) =
+        withContext(Dispatchers.IO) {
+            if (currentResourceId != resourceId) {
+                currentResourceId = resourceId
+                audioPlayer.reset()
 
-            context.resources.openRawResourceFd(resourceId)?.use { fd ->
-                audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+                context.resources.openRawResourceFd(resourceId)?.use { fd ->
+                    audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+                }
+
+                audioPlayer.prepare()
             }
 
-            audioPlayer.prepare()
+            audioPlayer.playbackParams = audioPlayer.playbackParams.setSpeed(speed.speed)
             audioPlayer.start()
-        } else
-            audioPlayer.start()
-    }
+        }
 
     override suspend fun pauseAudio() {
         if (audioPlayer.isPlaying) audioPlayer.pause()
@@ -44,5 +47,12 @@ class AudioRepositoryImpl @Inject constructor(
     override suspend fun fastForward() {
         val newPosition = (audioPlayer.currentPosition + 5000).coerceAtMost(audioPlayer.duration)
         audioPlayer.seekTo(newPosition)
+    }
+
+    override suspend fun getNextAudioSpeed(current: AudioSpeed): AudioSpeed {
+        val new = current.next()
+        if (audioPlayer.isPlaying)
+            audioPlayer.playbackParams = audioPlayer.playbackParams.setSpeed(new.speed)
+        return new
     }
 }

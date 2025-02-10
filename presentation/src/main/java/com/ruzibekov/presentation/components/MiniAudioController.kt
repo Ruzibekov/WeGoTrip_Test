@@ -1,5 +1,6 @@
 package com.ruzibekov.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,30 +13,34 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ruzibekov.domain.constatns.Constants
 import com.ruzibekov.presentation.R
+import com.ruzibekov.presentation.extension.formatSpeed
+import com.ruzibekov.presentation.screens.main.MainAction
+import com.ruzibekov.presentation.screens.main.MainState
 import com.ruzibekov.presentation.theme.WeGoTripColors
-import com.ruzibekov.presentation.theme.WeGoTrip_TestTheme
 
 @Composable
 fun MiniAudioController(
-    isPlaying: Boolean,
-    onOptionsClick: () -> Unit,
-    onPlayClick: () -> Unit,
-    onPauseClick: () -> Unit,
-    onRewindClick: () -> Unit,
-    onFastForwardClick: () -> Unit
+    state: MainState,
+    sendAction: (MainAction) -> Unit,
+    onOptionsClick: () -> Unit
 ) {
+    val tour = state.tour!!.steps[0]
+
     Column(
         modifier = Modifier
             .height(Constants.MINI_CONTROLLER_HEIGHT.dp)
@@ -63,11 +68,19 @@ fun MiniAudioController(
             )
 
             IconButton(
-                onClick = if(isPlaying) onPauseClick else onPlayClick,
+                onClick = {
+                    sendAction(
+                        if (state.isPlaying) MainAction.OnPauseClick
+                        else MainAction.OnPlayClick(tour.audio)
+                    )
+                },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
-                    painter = painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                    painter = painterResource(
+                        if (state.isPlaying) R.drawable.ic_pause
+                        else R.drawable.ic_play
+                    ),
                     contentDescription = "vertical options button",
                 )
             }
@@ -82,7 +95,9 @@ fun MiniAudioController(
             )
 
             IconButton(
-                onClick = onRewindClick,
+                onClick = {
+                    sendAction(MainAction.OnRewindAudioClick)
+                },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -91,18 +106,26 @@ fun MiniAudioController(
                 )
             }
 
-            IconButton(
-                onClick = {},
-                modifier = Modifier.size(24.dp)
+            Log.i("RRR", state.audioSpeed.speed.formatSpeed())
+
+            Surface(
+                onClick = {
+                    sendAction(MainAction.ChangeSpeed(state.audioSpeed))
+                },
+                color = Color.Transparent,
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_audio_speed),
-                    contentDescription = "vertical options button",
+                Text(
+                    text = "${state.audioSpeed.speed.formatSpeed()}x",
+                    modifier = Modifier.size(48.dp, 24.dp),
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center
                 )
             }
 
             IconButton(
-                onClick = onFastForwardClick,
+                onClick = {
+                    sendAction(MainAction.OnFastForwardClick)
+                },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -113,10 +136,4 @@ fun MiniAudioController(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun MiniAudioControllerPreview() {
-    WeGoTrip_TestTheme { MiniAudioController(true, {}, {}, {}, {}, {}) }
 }

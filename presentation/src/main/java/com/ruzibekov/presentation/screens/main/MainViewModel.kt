@@ -1,7 +1,9 @@
 package com.ruzibekov.presentation.screens.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ruzibekov.domain.usecases.ChangeAudioSpeedUseCase
 import com.ruzibekov.domain.usecases.FastForwardAudioUseCase
 import com.ruzibekov.domain.usecases.GetTourUseCase
 import com.ruzibekov.domain.usecases.PauseAudioUseCase
@@ -21,6 +23,7 @@ class MainViewModel @Inject constructor(
     private val pauseAudioUseCase: PauseAudioUseCase,
     private val rewindAudioUseCase: RewindAudioUseCase,
     private val fastForwardAudioUseCase: FastForwardAudioUseCase,
+    private val changeAudioSpeedUseCase: ChangeAudioSpeedUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -46,7 +49,7 @@ class MainViewModel @Inject constructor(
             try {
                 when (action) {
                     is MainAction.OnPlayClick -> {
-                        playAudioUseCase(action.resourceId)
+                        playAudioUseCase(action.resourceId, _state.value.audioSpeed)
                         _state.update { it.copy(isPlaying = true, error = null) }
                     }
 
@@ -62,9 +65,14 @@ class MainViewModel @Inject constructor(
                     MainAction.OnRewindAudioClick -> {
                         rewindAudioUseCase()
                     }
+
+                    is MainAction.ChangeSpeed -> {
+                        val newSpeed = changeAudioSpeedUseCase(action.currentSpeed)
+                        _state.update { it.copy(audioSpeed = newSpeed) }
+                    }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                Log.e("RRR", e.message.toString())
             }
         }
     }

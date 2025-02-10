@@ -1,5 +1,6 @@
 package com.ruzibekov.presentation.screens.main
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +11,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -18,9 +20,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ruzibekov.domain.constatns.Constants
 import com.ruzibekov.presentation.components.ErrorScreen
 import com.ruzibekov.presentation.components.LoadingScreen
-import com.ruzibekov.presentation.components.MainBottomBarContent
+import com.ruzibekov.presentation.components.MainAudioController
 import com.ruzibekov.presentation.components.MainContent
+import com.ruzibekov.presentation.components.MiniAudioController
 import com.ruzibekov.presentation.extension.rememberNavigationBarHeight
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
@@ -46,14 +50,33 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Content(state: MainState, sendAction: (MainAction) -> Unit) {
-    val tour = state.tour!!.steps[0]
+    val scope = rememberCoroutineScope()
     val sheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val navigationHeight = rememberNavigationBarHeight()
 
     BottomSheetScaffold(
         scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
         sheetContent = {
-            MainBottomBarContent(sheetState, tour, state.isPlaying, sendAction)
+            Crossfade(
+                targetState = sheetState.targetValue,
+                modifier = Modifier.fillMaxSize()
+            ) { sheetValue ->
+                if (sheetValue == SheetValue.Expanded)
+                    MainAudioController(
+                        title = "Russkiy Muzey",
+                        currentPosition = 0.45f,
+                        duration = "0:30",
+                        isPlaying = false,
+                        onHideClick = {
+                            scope.launch { sheetState.partialExpand() }
+                        },
+                        onSliderValueChange = {}
+                    )
+                else
+                    MiniAudioController(state, sendAction) {
+                        scope.launch { sheetState.expand() }
+                    }
+            }
         },
         sheetDragHandle = {},
         sheetShape = RoundedCornerShape(0.dp),
@@ -61,6 +84,6 @@ fun Content(state: MainState, sendAction: (MainAction) -> Unit) {
         sheetContainerColor = Color.White,
         containerColor = Color.White
     ) {
-        MainContent(tour, sendAction)
+        MainContent(state, sendAction)
     }
 }

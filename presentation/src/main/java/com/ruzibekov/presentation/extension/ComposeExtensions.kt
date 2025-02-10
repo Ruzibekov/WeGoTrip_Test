@@ -13,3 +13,5 @@ fun rememberNavigationBarHeight(): Dp {
         WindowInsets.navigationBars.getBottom(this).toDp()
     }
 }
+
+fun Float.formatSpeed() = String.format(if (this % 1 == 0f) "%.0f" else "%.1f", this)
