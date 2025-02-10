@@ -1,6 +1,5 @@
 package com.ruzibekov.presentation.components
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,7 +46,7 @@ fun MiniAudioController(
             .clickable(onClick = onOptionsClick),
     ) {
         LinearProgressIndicator(
-            progress = { 0.1f },
+            progress = { state.position },
             modifier = Modifier.fillMaxWidth(),
             trackColor = WeGoTripColors.Stroke,
             color = WeGoTripColors.Primary
@@ -105,8 +104,6 @@ fun MiniAudioController(
                     contentDescription = "vertical options button",
                 )
             }
-
-            Log.i("RRR", state.audioSpeed.speed.formatSpeed())
 
             Surface(
                 onClick = {

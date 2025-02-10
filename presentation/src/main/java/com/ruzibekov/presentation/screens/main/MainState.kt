@@ -8,6 +8,7 @@ data class MainState(
     val tour: Tour? = null,
     val isPlaying: Boolean = false,
     val audioSpeed: AudioSpeed = AudioSpeed.NORMAL,
+    val position: Float = 0f,
     val error: String? = null
 )
 

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ruzibekov.domain.usecases.ChangeAudioSpeedUseCase
 import com.ruzibekov.domain.usecases.FastForwardAudioUseCase
+import com.ruzibekov.domain.usecases.GetAudioDefaultValuesUseCase
+import com.ruzibekov.domain.usecases.GetAudioPositionUseCase
 import com.ruzibekov.domain.usecases.GetTourUseCase
 import com.ruzibekov.domain.usecases.PauseAudioUseCase
 import com.ruzibekov.domain.usecases.PlayAudioUseCase
@@ -12,6 +14,8 @@ import com.ruzibekov.domain.usecases.RewindAudioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,11 +23,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getTourUseCase: GetTourUseCase,
+    private val getAudioDefaultValuesUseCase: GetAudioDefaultValuesUseCase,
     private val playAudioUseCase: PlayAudioUseCase,
+    private val getAudioPositionUseCase: GetAudioPositionUseCase,
     private val pauseAudioUseCase: PauseAudioUseCase,
     private val rewindAudioUseCase: RewindAudioUseCase,
     private val fastForwardAudioUseCase: FastForwardAudioUseCase,
-    private val changeAudioSpeedUseCase: ChangeAudioSpeedUseCase
+    private val changeAudioSpeedUseCase: ChangeAudioSpeedUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -31,6 +37,18 @@ class MainViewModel @Inject constructor(
 
     init {
         loadTour()
+
+        viewModelScope.launch {
+            getAudioDefaultValuesUseCase()?.run {
+                _state.update { it.copy(isPlaying = first, audioSpeed = second) }
+            }
+        }
+
+        getAudioPositionUseCase()
+            .onEach { new ->
+                _state.update { it.copy(position = new) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadTour() {
