@@ -21,6 +21,6 @@ class MockData {
 
     val tour = Tour(
         title = "Алматы; погружение в жизнь \"южной столицы\" Казахстана",
-        steps = listOf(tourStep, tourStep, tourStep)
+        steps = listOf(tourStep)
     )
 }
