@@ -15,17 +15,24 @@ class AudioRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AudioRepository {
 
+    private var currentResourceId: Int? = null
+
     override suspend fun playAudio(resourceId: Int) = withContext(Dispatchers.IO) {
-        if (audioPlayer.isPlaying) {
-            audioPlayer.stop()
+        if (currentResourceId != resourceId) {
+            currentResourceId = resourceId
             audioPlayer.reset()
-        }
 
-        context.resources.openRawResourceFd(resourceId)?.use { fd ->
-            audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
-        }
+            context.resources.openRawResourceFd(resourceId)?.use { fd ->
+                audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+            }
 
-        audioPlayer.prepare()
-        audioPlayer.start()
+            audioPlayer.prepare()
+            audioPlayer.start()
+        } else
+            audioPlayer.start()
+    }
+
+    override suspend fun pauseAudio() {
+        if (audioPlayer.isPlaying) audioPlayer.pause()
     }
 }

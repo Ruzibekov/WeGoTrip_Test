@@ -3,6 +3,7 @@ package com.ruzibekov.presentation.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ruzibekov.domain.usecases.GetTourUseCase
+import com.ruzibekov.domain.usecases.PauseAudioUseCase
 import com.ruzibekov.domain.usecases.PlayAudioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getTourUseCase: GetTourUseCase,
-    private val playAudioUseCase: PlayAudioUseCase
+    private val playAudioUseCase: PlayAudioUseCase,
+    private val pauseAudioUseCase: PauseAudioUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainState())
@@ -45,6 +47,7 @@ class MainViewModel @Inject constructor(
                     }
 
                     MainAction.OnPauseClick -> {
+                        pauseAudioUseCase()
                         _state.update { it.copy(isPlaying = false, error = null) }
                     }
                 }
