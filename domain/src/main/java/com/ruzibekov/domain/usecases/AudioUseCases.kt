@@ -4,17 +4,21 @@ import com.ruzibekov.domain.model.AudioSpeed
 import com.ruzibekov.domain.repository.AudioRepository
 import javax.inject.Inject
 
+class InitializeMediaPlayerUseCase @Inject constructor(private val repository: AudioRepository) {
+    suspend operator fun invoke(
+        resourceId: Int,
+        onCompletion: () -> Unit,
+        onDuration: (millis: Int) -> Unit
+    ) = repository.initial(resourceId, onDuration, onCompletion)
+}
+
 class GetAudioDefaultValuesUseCase @Inject constructor(private val repository: AudioRepository) {
     suspend operator fun invoke() = repository.getDefaultValues()
 }
 
 class PlayAudioUseCase @Inject constructor(private val repository: AudioRepository) {
 
-    suspend operator fun invoke(
-        resourceId: Int,
-        speed: AudioSpeed,
-        onCompletion: () -> Unit
-    ) = repository.play(resourceId, speed, onCompletion)
+    suspend operator fun invoke(speed: AudioSpeed, onUpdatePosition: (Float) -> Unit) = repository.play(speed, onUpdatePosition)
 }
 
 class GetAudioPositionUseCase @Inject constructor(private val repository: AudioRepository) {

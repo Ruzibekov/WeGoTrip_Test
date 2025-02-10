@@ -15,3 +15,14 @@ fun rememberNavigationBarHeight(): Dp {
 }
 
 fun Float.formatSpeed() = String.format(if (this % 1 == 0f) "%.0f" else "%.1f", this)
+
+fun Int.formatToTime(): String {
+    val hours = this / 3600000
+    val minutes = (this % 3600000) / 60000
+    val seconds = (this % 60000) / 1000
+
+    return if (hours > 0)
+        "%02d:%02d:%02d".format(hours, minutes, seconds)
+    else
+        "%02d:%02d".format(minutes, seconds)
+}

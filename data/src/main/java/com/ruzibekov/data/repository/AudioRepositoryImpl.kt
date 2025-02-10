@@ -22,6 +22,24 @@ class AudioRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AudioRepository {
 
+    override suspend fun initial(
+        resourceId: Int,
+        onDuration: (millis: Int) -> Unit,
+        onCompleted: () -> Unit
+    ) {
+        audioPlayer.reset()
+
+        context.resources.openRawResourceFd(resourceId)?.use { fd ->
+            audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+        }
+
+        audioPlayer.prepare()
+        audioPlayer.setOnCompletionListener {
+            onCompleted()
+        }
+        onDuration(audioPlayer.duration)
+    }
+
     override suspend fun getDefaultValues() =
         if (audioPlayer.isPlaying)
             Pair(
@@ -32,34 +50,15 @@ class AudioRepositoryImpl @Inject constructor(
             )
         else null
 
-    private var currentResourceId: Int? = null
     private var positionTrackingJob: Job? = null
 
     override suspend fun play(
-        resourceId: Int,
         speed: AudioSpeed,
-        onCompletion: () -> Unit
+        onUpdatePosition: (position: Float) -> Unit
     ) = withContext(Dispatchers.IO) {
-
-        if (currentResourceId != resourceId) {
-            currentResourceId = resourceId
-            audioPlayer.reset()
-
-            context.resources.openRawResourceFd(resourceId)?.use { fd ->
-                audioPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
-            }
-
-            audioPlayer.prepare()
-        }
-
         audioPlayer.playbackParams = audioPlayer.playbackParams.setSpeed(speed.speed)
         audioPlayer.start()
-
-        audioPlayer.setOnCompletionListener {
-            onCompletion()
-        }
-
-        audioPlayer.getPositionForSliders()
+        onUpdatePosition(audioPlayer.getPositionForSliders())
     }
 
     override fun getCurrentPosition() = flow {

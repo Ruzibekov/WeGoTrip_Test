@@ -5,9 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
 
+    suspend fun initial(
+        resourceId: Int,
+        onDuration: (millis: Int) -> Unit,
+        onCompleted: () -> Unit,
+    )
+
     suspend fun getDefaultValues(): Pair<Boolean, AudioSpeed>?
 
-    suspend fun play(resourceId: Int, speed: AudioSpeed, onCompletion: () -> Unit): Float
+    suspend fun play(speed: AudioSpeed, onUpdatePosition: (Float) -> Unit)
 
     fun getCurrentPosition(): Flow<Float>
 

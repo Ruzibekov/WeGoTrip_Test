@@ -9,6 +9,7 @@ data class MainState(
     val isPlaying: Boolean = false,
     val audioSpeed: AudioSpeed = AudioSpeed.NORMAL,
     val position: Float = 0f,
+    val durationInMillis: Int = 0,
     val error: String? = null
 )
 

@@ -9,6 +9,7 @@ import com.ruzibekov.domain.usecases.FastForwardAudioUseCase
 import com.ruzibekov.domain.usecases.GetAudioDefaultValuesUseCase
 import com.ruzibekov.domain.usecases.GetAudioPositionUseCase
 import com.ruzibekov.domain.usecases.GetTourUseCase
+import com.ruzibekov.domain.usecases.InitializeMediaPlayerUseCase
 import com.ruzibekov.domain.usecases.PauseAudioUseCase
 import com.ruzibekov.domain.usecases.PlayAudioUseCase
 import com.ruzibekov.domain.usecases.RewindAudioUseCase
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getTourUseCase: GetTourUseCase,
+    private val initMediaPlayerUseCase: InitializeMediaPlayerUseCase,
     private val getAudioDefaultValuesUseCase: GetAudioDefaultValuesUseCase,
     private val playAudioUseCase: PlayAudioUseCase,
     private val pauseAudioUseCase: PauseAudioUseCase,
@@ -56,8 +58,17 @@ class MainViewModel @Inject constructor(
     private fun loadTour() {
         viewModelScope.launch {
             try {
-                val tour = getTourUseCase()
-                _state.update { it.copy(tour = tour.steps[0]) }
+                val tour = getTourUseCase().steps[0]
+                _state.update { it.copy(tour = tour) }
+
+                initMediaPlayerUseCase(
+                    tour.audio,
+                    onCompletion = { sendAction(MainAction.OnPauseClick) },
+                    onDuration = { millis ->
+                        _state.update { it.copy(durationInMillis = millis) }
+                    }
+                )
+
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
             }
@@ -69,10 +80,15 @@ class MainViewModel @Inject constructor(
             try {
                 when (action) {
                     is MainAction.OnPlayClick -> {
-                        val position = playAudioUseCase(action.resourceId, _state.value.audioSpeed){
-                            sendAction(MainAction.OnPauseClick)
+
+                        playAudioUseCase(
+                            speed = _state.value.audioSpeed,
+                            onUpdatePosition = { position -> _state.update { it.copy(position = position) } }
+                        )
+
+                        _state.update {
+                            it.copy(isPlaying = true, error = null)
                         }
-                        _state.update { it.copy(isPlaying = true, error = null, position = position) }
                     }
 
                     MainAction.OnPauseClick -> {

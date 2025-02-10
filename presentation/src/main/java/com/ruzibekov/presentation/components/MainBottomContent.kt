@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ruzibekov.presentation.R
 import com.ruzibekov.presentation.extension.formatSpeed
+import com.ruzibekov.presentation.extension.formatToTime
 import com.ruzibekov.presentation.screens.main.MainAction
 import com.ruzibekov.presentation.screens.main.MainState
 import com.ruzibekov.presentation.theme.WeGoTripColors
@@ -146,11 +147,10 @@ fun MainAudioContentPlayer(
                         fontSize = 12.sp
                     )
                     Text(
-                        text = "--",
+                        text = state.durationInMillis.formatToTime(),
                         fontSize = 12.sp
                     )
                 }
-
 
                 Row(
                     modifier = Modifier
@@ -232,7 +232,7 @@ fun MainAudioContentPlayer(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text "
+            text = tour.description,
         )
     }
 }
@@ -297,11 +297,4 @@ private fun TopBar(
             )
         }
     }
-}
-
-private fun formatTime(position: Float): String {
-    val totalSeconds = (position * 30).toInt() // Assuming 30 seconds total duration
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "%d:%02d".format(minutes, seconds)
 }
