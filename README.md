@@ -39,9 +39,9 @@
 
 <table>
   <tr>
-    <td><img src="screenshots/main_screen.jpg" width="200" alt="Главный экран"/></td>
-    <td><img src="screenshots/player_expanded.jpg" width="200" alt="Развернутый плеер"/></td>
-    <td><img src="screenshots/player_mini.jpg" width="200" alt="Мини-плеер"/></td>
+    <td><img src="screenshots/main_screen.jpg" width="1080" alt="Главный экран"/></td>
+    <td><img src="screenshots/player_expanded.jpg" width="1080" alt="Развернутый плеер"/></td>
+    <td><img src="screenshots/steps.jpg" width="1080" alt="Список этапов"/></td>
   </tr>
 </table>
 
