@@ -48,7 +48,7 @@ fun MainMiniBottomContent(
             .padding(bottom = (Constants.MINI_CONTROLLER_HEIGHT / 4).dp),
     ) {
         LinearProgressIndicator(
-            progress = { state.position },
+            progress = { state.getPositionForSlider() },
             modifier = Modifier.fillMaxWidth(),
             trackColor = WeGoTripColors.Stroke,
             color = WeGoTripColors.Primary

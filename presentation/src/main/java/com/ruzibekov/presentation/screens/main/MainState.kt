@@ -8,10 +8,12 @@ data class MainState(
     val tour: Tour? = null,
     val isPlaying: Boolean = false,
     val audioSpeed: AudioSpeed = AudioSpeed.NORMAL,
-    val position: Float = 0f,
+    val currentPositionInMillis: Int = 0,
     val durationInMillis: Int = 0,
     val error: String? = null
-)
+){
+    fun getPositionForSlider() = currentPositionInMillis.toFloat() / durationInMillis.toFloat()
+}
 
 sealed interface MainAction {
     data class OnPlayClick(@RawRes val resourceId: Int) : MainAction

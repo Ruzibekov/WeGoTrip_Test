@@ -50,7 +50,7 @@ class MainViewModel @Inject constructor(
 
         getAudioPositionUseCase()
             .onEach { new ->
-                _state.update { it.copy(position = new) }
+                _state.update { it.copy(currentPositionInMillis = new) }
             }
             .launchIn(viewModelScope)
     }
@@ -83,7 +83,7 @@ class MainViewModel @Inject constructor(
 
                         playAudioUseCase(
                             speed = _state.value.audioSpeed,
-                            onUpdatePosition = { position -> _state.update { it.copy(position = position) } }
+                            onUpdatePosition = { position -> _state.update { it.copy(currentPositionInMillis = position) } }
                         )
 
                         _state.update {

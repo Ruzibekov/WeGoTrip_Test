@@ -18,11 +18,11 @@ class GetAudioDefaultValuesUseCase @Inject constructor(private val repository: A
 
 class PlayAudioUseCase @Inject constructor(private val repository: AudioRepository) {
 
-    suspend operator fun invoke(speed: AudioSpeed, onUpdatePosition: (Float) -> Unit) = repository.play(speed, onUpdatePosition)
+    suspend operator fun invoke(speed: AudioSpeed, onUpdatePosition: (Int) -> Unit) = repository.play(speed, onUpdatePosition)
 }
 
 class GetAudioPositionUseCase @Inject constructor(private val repository: AudioRepository) {
-    operator fun invoke() = repository.getCurrentPosition()
+    operator fun invoke() = repository.getPosition()
 }
 
 class PauseAudioUseCase @Inject constructor(private val repository: AudioRepository) {

@@ -113,11 +113,11 @@ fun MainAudioContentPlayer(
                 )
 
                 var position by remember {
-                    mutableFloatStateOf(state.position)
+                    mutableFloatStateOf(state.getPositionForSlider())
                 }
 
                 LaunchedEffect(state) {
-                    position = if (positionChangeJob?.isActive == true) position else state.position
+                    position = if (positionChangeJob?.isActive == true) position else state.getPositionForSlider()
                 }
 
                 Slider(
@@ -143,7 +143,7 @@ fun MainAudioContentPlayer(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "--",
+                        text = (position * state.durationInMillis).toInt().formatToTime(),
                         fontSize = 12.sp
                     )
                     Text(
