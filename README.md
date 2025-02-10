@@ -37,3 +37,15 @@
 
 ## Скриншоты
 
+<table>
+  <tr>
+    <td><img src="screenshots/main_screen.jpg" width="200" alt="Главный экран"/></td>
+    <td><img src="screenshots/player_expanded.jpg" width="200" alt="Развернутый плеер"/></td>
+    <td><img src="screenshots/player_mini.jpg" width="200" alt="Мини-плеер"/></td>
+  </tr>
+</table>
+
+
+Установка
+Вы можете скачать последнюю версию приложения из папки apk/app-release.apk
+
